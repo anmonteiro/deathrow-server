@@ -1,40 +1,56 @@
 (ns deathrow-server.handler
-  (:use compojure.core)
-  (:use cheshire.core)
-  (:use ring.util.response)
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
-            [ring.middleware.json :as middleware]
-            [somnium.congomongo :as mongo]))
+	(:use compojure.core)
+	(:use cheshire.core)
+	(:use ring.util.response)
+	(:require [compojure.handler :as handler]
+		[compojure.route :as route]
+		[ring.middleware.json :as middleware]
+		[somnium.congomongo :as mongo]
+		[ring.middleware.cors :refer [wrap-cors]]
+		[deathrow-server.utils :as utils]))
 
 (def conn
-  (mongo/make-connection "deathrow"
-                     :host "127.0.0.1"
-                     :port 27017))
+	(mongo/make-connection "deathrow"
+		:host "127.0.0.1"
+		:port 27017))
 
-
-(defn get-random-int
-	[min max]
-	(+ (rand-int (- (inc max) min)) min))
+(mongo/set-connection! conn)
 
 
 (defn get-random-statement
 	"Return a random offender's information"
 	[]
-	(-> (response (let [offender (mongo/fetch-one :offenders
-						:where {
-							:executionNo (get-random-int 1 515)
-						}
-						:as :json)]
-		offender))
-		(header "Content-Type" "application/json; charset=utf-8")))
+	(response
+		(mongo/fetch-one
+			:offenders
+			:where {
+				:executionNo (utils/get-random-int 1 515)
+			}
+			:as :json)))
+
+
+(defn get-offender-by-id
+	"Return an offender given its _id"
+	[id]
+	(response (str "oi " id)))
+
+
+(defroutes offenders-routes
+	(GET "/random" [] (get-random-statement))
+	(GET "/:id" [id] (get-offender-by-id id))
+	(route/not-found "Not Found"))
 
 
 (defroutes app-routes
-  (GET "/random" [] (get-random-statement))
-  (route/not-found "Not Found"))
+	(context "/offenders" [] offenders-routes)
+	(route/not-found "Not Found"))
 
-(mongo/set-connection! conn)
+
 
 (def app
-  (middleware/wrap-json-response (handler/api app-routes)))
+	(->
+		(handler/api app-routes)
+		(middleware/wrap-json-response)
+		(utils/wrap-content-type-json)
+		(wrap-cors :access-control-allow-origin #"http://anmonteiro.github.io"
+			:access-control-allow-methods [:get])))
