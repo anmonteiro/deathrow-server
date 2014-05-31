@@ -25,14 +25,25 @@
 			:offenders
 			:where {
 				:executionNo (utils/get-random-int 1 515)
-			}
-			:as :json)))
+			})))
 
 
 (defn get-offender-by-id
 	"Return an offender given its _id"
 	[id]
-	(response (str "oi " id)))
+	(try
+		(let
+			[offender
+				(mongo/fetch-one
+					:offenders
+					:where {
+						:_id (Integer/parseInt id)
+					})]
+			(if (empty? offender)
+				(utils/return-404 id)
+				(response offender)))
+	(catch NumberFormatException e
+		(utils/return-404 id))))
 
 
 (defroutes offenders-routes
@@ -44,7 +55,6 @@
 (defroutes app-routes
 	(context "/offenders" [] offenders-routes)
 	(route/not-found "Not Found"))
-
 
 
 (def app
