@@ -49,16 +49,11 @@
 (defn get-random-statement
 	"Return a random offender's information"
 	[]
-	(response
-		(mongo/fetch-one
-			:offenders
-			:where {
-				:executionNo (utils/get-random-int 1 515)
-			})))
+	(redirect (str (utils/get-random-int 1 515))))
 
 
 (defn get-offender-by-id
-	"Return an offender given its _id"
+	"Return an offender given its executionNo"
 	[id]
 	(try
 		(let
@@ -66,7 +61,7 @@
 				(mongo/fetch-one
 					:offenders
 					:where {
-						:_id (Integer/parseInt id)
+						:executionNo (Integer/parseInt id)
 					})]
 			(if (empty? offender)
 				(utils/return-404 id)
@@ -79,7 +74,8 @@
 	(GET "/" [] (get-all-offenders))
 	(context "/page" []
 		(GET "/" [] (get-all-offenders))
-		(GET "/:num" [num] (get-all-offenders num)))
+		(GET ["/:num", :num #"[1-9][0-9]*$"] [num] (get-all-offenders num))
+		(route/not-found "Not Found"))
 	(GET "/random" [] (get-random-statement))
 	(GET "/:id" [id] (get-offender-by-id id))
 	(route/not-found "Not Found"))
