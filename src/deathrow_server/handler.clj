@@ -7,14 +7,19 @@
 		[ring.middleware.json :as middleware]
 		[somnium.congomongo :as mongo]
 		[ring.middleware.cors :refer [wrap-cors]]
-		[deathrow-server.utils :as utils]))
+		[deathrow-server.utils :as utils]
+		[ring.adapter.jetty :as jetty])
+	(:gen-class))
 
 (def conn
 	(mongo/make-connection "deathrow"
 		:host "127.0.0.1"
 		:port 27017))
 
-(mongo/set-connection! conn)
+(defn get-all-offenders
+	([] (get-all-offenders 1))
+	([page-num]
+		(response (str page-num))))
 
 
 (defn get-random-statement
@@ -47,6 +52,10 @@
 
 
 (defroutes offenders-routes
+	(GET "/" [] (get-all-offenders))
+	(context "/page" []
+		(GET "/" [] (get-all-offenders))
+		(GET "/:num" [num] (get-all-offenders num)))
 	(GET "/random" [] (get-random-statement))
 	(GET "/:id" [id] (get-offender-by-id id))
 	(route/not-found "Not Found"))
@@ -58,9 +67,21 @@
 
 
 (def app
-	(->
-		(handler/api app-routes)
-		(middleware/wrap-json-response)
-		(utils/wrap-content-type-json)
-		(wrap-cors :access-control-allow-origin #"http://anmonteiro.github.io"
-			:access-control-allow-methods [:get])))
+	(do
+		(mongo/set-connection! conn)
+		(->
+			(handler/api app-routes)
+			(middleware/wrap-json-response)
+			(utils/wrap-content-type-json)
+			(wrap-cors :access-control-allow-origin #"http://anmonteiro.github.io"
+				:access-control-allow-methods [:get]))))
+
+(defn -main
+  [& [port]]
+  (let [port (Integer. (or port
+                           (System/getenv "PORT")
+                           3000))]
+    (jetty/run-jetty #'app {:port  port
+                            :join? false})))
+
+
