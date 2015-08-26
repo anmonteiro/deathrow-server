@@ -1,9 +1,9 @@
 (ns deathrow-server.test.handler
-  (:use clojure.test
-        ring.mock.request
-        deathrow-server.handler
-        cheshire.core
-        somnium.congomongo))
+  (:require [clojure.test :refer :all]
+            [ring.mock.request :refer :all]
+            [deathrow-server.handler :refer :all]
+            [cheshire.core :refer :all]
+            [somnium.congomongo :refer :all]))
 
 (deftest test-app
   (testing ""
@@ -36,6 +36,5 @@
   (testing "get offender by execution number"
     (let [response (app (request :get "/offenders/414"))]
       (let [id (get (parse-string (:body response) true) :_id)]
-      (is (= id 999313)))))
+        (is (= id 999313)))))
   (close-connection conn))
-  

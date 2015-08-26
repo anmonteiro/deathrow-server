@@ -1,0 +1,1 @@
+web: java $JVM_OPTS -cp target/deathrow-server-0.1.0-standalone.jar clojure.main -m deathrow-server.handler $PORT
