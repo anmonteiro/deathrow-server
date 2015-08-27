@@ -37,4 +37,4 @@
     (let [response (app (request :get "/offenders/414"))]
       (let [id (get (parse-string (:body response) true) :_id)]
         (is (= id 999313)))))
-  (close-connection conn))
+  (close-connection @conn))

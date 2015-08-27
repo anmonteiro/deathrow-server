@@ -14,9 +14,9 @@
 ;; CONSTANTS
 (def page-size 20)
 
-(def db-user (atom nil))
-(def db-pw (atom nil))
-(def mongo-uri (atom nil))
+(def db-user)
+(def db-pw)
+(def mongo-uri)
 
 (def conn (atom nil))
 
@@ -28,7 +28,6 @@
   ([] (get-all-offenders 1))
   ([page-num]
    (let
-     ;; TODO: does it make sense to use read-string here?
      [page-num (Integer. page-num)
       offenders
       (mongo/fetch
@@ -86,9 +85,24 @@
   (context "/offenders" [] offenders-routes)
   (route/not-found "Not Found"))
 
+(defn- init-config-vars
+  []
+  (utils/set-var! (var db-user) (System/getenv "DB_USER"))
+  (utils/set-var! (var db-pw) (System/getenv "DB_PW"))
+  (utils/set-var! (var mongo-uri) (System/getenv "MONGOLAB_URI"))
+  (reset! conn
+    (mongo/make-connection
+      (str "mongodb://"
+            db-user
+            ":"
+            db-pw
+            "@"
+            mongo-uri))))
 
 (def app
   (do
+    (init-config-vars)
+    (mongo/set-connection! @conn)
     (->
       (handler/api app-routes)
       (middleware/wrap-json-response)
@@ -99,26 +113,10 @@
                                                 "Content-Type" "Accept"
                                                 "Cache-Control" "Accept-Encoding"]))))
 
-(defn- init-config-vars
-  []
-  (reset! db-user (System/getenv "DB_USER"))
-  (reset! db-pw (System/getenv "DB_PW"))
-  (reset! mongo-uri (System/getenv "MONGOLAB_URI"))
-  (reset! conn
-    (mongo/make-connection
-      (str "mongodb://"
-            @db-user
-            ":"
-            @db-pw
-            "@"
-            @mongo-uri))))
-
 (defn -main
   [& [port]]
   (let [port (Integer. (or port
                            (System/getenv "PORT")
                            3000))]
-    (init-config-vars)
-    (mongo/set-connection! @conn)
     (jetty/run-jetty #'app {:port  port
                             :join? false})))

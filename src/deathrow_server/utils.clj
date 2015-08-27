@@ -24,3 +24,7 @@
    (route/not-found "Page not found."))
   ([param]
    (route/not-found (str "Param not found: " param))))
+
+(defn set-var!
+  [v new-value]
+  (alter-var-root v (constantly new-value)))
