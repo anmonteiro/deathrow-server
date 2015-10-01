@@ -1,5 +1,8 @@
 # deathrow-server
 
+[![Build Status](https://travis-ci.org/anmonteiro/deathrow-server.svg?branch=master)](https://travis-ci.org/anmonteiro/deathrow-server)
+[![Dependencies Status](http://jarkeeper.com/anmonteiro/deathrow-server/status.svg)](http://jarkeeper.com/anmonteiro/deathrow-server)
+
 Random last statements by executed offenders. Information obtained from the [TDoCJ](http://www.tdcj.state.tx.us/death_row/dr_executed_offenders.html).
 
 This repository contains the code for the web server that returns JSON to be consumed by clients. A simple web client for this API resides [here](https://github.com/anmonteiro/deathrow).
