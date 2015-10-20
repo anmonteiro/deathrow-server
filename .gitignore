@@ -9,4 +9,4 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 
-deathrow-server.sublime-*
+scripts/vars.sh
