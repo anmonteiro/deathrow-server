@@ -1,6 +1,6 @@
 (ns deathrow-server.utils
   (:require [compojure.route :as route]
-            [ring.util.response :refer :all]))
+            [ring.util.response :refer [header response]]))
 
 (defn wrap-content-type-json
   "Middleware that converts responses to have the
@@ -15,8 +15,9 @@
 
 
 (defn get-random-int
-  [min max]
-  (+ (rand-int (- (inc max) min)) min))
+  ([max] (get-random-int 1 max))
+  ([min max]
+   (+ (rand-int (- (inc max) min)) min)))
 
 
 (defn return-404

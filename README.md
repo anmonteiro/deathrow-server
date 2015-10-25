@@ -1,7 +1,4 @@
-# deathrow-server
-
-[![Build Status](https://travis-ci.org/anmonteiro/deathrow-server.svg?branch=master)](https://travis-ci.org/anmonteiro/deathrow-server)
-[![Dependencies Status](http://jarkeeper.com/anmonteiro/deathrow-server/status.svg)](http://jarkeeper.com/anmonteiro/deathrow-server)
+# deathrow-server [![Build Status](https://travis-ci.org/anmonteiro/deathrow-server.svg?branch=master)](https://travis-ci.org/anmonteiro/deathrow-server) [![Dependencies Status](http://jarkeeper.com/anmonteiro/deathrow-server/status.svg)](http://jarkeeper.com/anmonteiro/deathrow-server)
 
 Random last statements by executed offenders. Information obtained from the [TDoCJ](http://www.tdcj.state.tx.us/death_row/dr_executed_offenders.html).
 
@@ -17,7 +14,7 @@ You will need [Leiningen][1] 2.0.0 or above installed.
 
 To start a web server for the application, run:
 
-    lein run
+    ./scripts/run.sh
 
 ## License
 

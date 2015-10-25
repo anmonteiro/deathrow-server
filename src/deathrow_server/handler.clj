@@ -1,25 +1,30 @@
 (ns deathrow-server.handler
-  (:use compojure.core)
-  (:use cheshire.core)
-  (:use ring.util.response)
-  (:require [compojure.handler :as handler]
+  (:require [deathrow-server.utils :as utils]
+            [compojure.core :refer [context defroutes GET]]
+            [compojure.handler :as handler]
             [compojure.route :as route]
-            [ring.middleware.json :as middleware]
-            [somnium.congomongo :as mongo]
+            [ring.adapter.jetty :as jetty]
             [ring.middleware.cors :refer [wrap-cors]]
-            [deathrow-server.utils :as utils]
-            [ring.adapter.jetty :as jetty])
+            [ring.middleware.json :as middleware]
+            [ring.util.response :refer [redirect response]]
+            [somnium.congomongo :as m])
   (:gen-class))
 
 ;; CONSTANTS
 (def page-size 20)
+(def coll :offenders)
 
+;; Environment variables (bound later)
 (def db-user)
 (def db-pw)
 (def mongo-uri)
 
+;; DB Connection
 (def conn (atom nil))
 
+(defn- wrap-response [res & more]
+  (-> (apply merge {:data res} more)
+    (response)))
 
 (defn get-all-offenders
   "Return offenders using pagination. We don't
@@ -27,45 +32,29 @@
   already does that, e.g. no need for try/catch."
   ([] (get-all-offenders 1))
   ([page-num]
-   (let
-     [page-num (Integer. page-num)
-      offenders
-      (mongo/fetch
-        :offenders
-        :sort {
-               :executionNo -1
-               }
-        :skip (* (dec page-num) page-size)
-        :limit page-size)]
-     (response {
-                :data offenders
-                :paging {
-                         :prev (dec page-num)
-                         :next (inc page-num)}}))))
-
+   (let [page-num (Integer. page-num)
+         offenders (m/fetch coll
+                            :sort {:executionNo -1}
+                            :skip (* (dec page-num) page-size)
+                            :limit page-size)]
+     (wrap-response offenders
+                    {:paging {:prev (dec page-num)
+                              :next (inc page-num)}}))))
 
 (defn get-random-statement
   "Return a random offender's information"
   []
-  (redirect (str (utils/get-random-int 1 515))))
-
+  (let [count (m/fetch-count coll)]
+    (redirect (str (utils/get-random-int count)))))
 
 (defn get-offender-by-id
   "Return an offender given its executionNo"
   [id]
   (try
-    (let
-      [offender
-       (mongo/fetch-one
-         :offenders
-         :where {
-                 :executionNo (Integer/parseInt id)
-                 })]
-      ;; TODO: consider using if-let, but only use it if fetch-one returns nil
-      ;; upon not finding the document
-      (if (empty? offender)
-        (utils/return-404 id)
-        (response offender)))
+    (if-let [offender (m/fetch-one coll
+                                   :where {:executionNo (Integer. id)})]
+      (wrap-response offender)
+      (utils/return-404 id))
     (catch NumberFormatException e
       (utils/return-404 id))))
 
@@ -85,38 +74,39 @@
   (context "/offenders" [] offenders-routes)
   (route/not-found "Not Found"))
 
-(defn- init-config-vars
-  []
+(defn- init-config-vars []
   (utils/set-var! (var db-user) (System/getenv "DB_USER"))
   (utils/set-var! (var db-pw) (System/getenv "DB_PW"))
   (utils/set-var! (var mongo-uri) (System/getenv "MONGOLAB_URI"))
   (reset! conn
-    (mongo/make-connection
-      (str "mongodb://"
-            db-user
-            ":"
-            db-pw
-            "@"
-            mongo-uri))))
+          (m/make-connection
+            (str "mongodb://" db-user ":" db-pw "@" mongo-uri))))
+
+(defn init! []
+  (init-config-vars)
+  (m/set-connection! @conn))
+
+(defn destroy! []
+  (m/close-connection @conn)
+  (reset! conn nil))
 
 (def app
-  (do
-    (init-config-vars)
-    (mongo/set-connection! @conn)
-    (->
-      (handler/api app-routes)
-      (middleware/wrap-json-response)
-      (utils/wrap-content-type-json)
-      (wrap-cors :access-control-allow-origin #".*"
-                 :access-control-allow-methods [:get]
-                 :access-control-allow-headers ["Origin" "X-Requested-With"
-                                                "Content-Type" "Accept"
-                                                "Cache-Control" "Accept-Encoding"]))))
+  (->
+    (handler/api app-routes)
+    (middleware/wrap-json-response)
+    (utils/wrap-content-type-json)
+    (wrap-cors :access-control-allow-origin #".*localhost.*|.*anmonteiro.com.*"
+               :access-control-allow-methods [:get]
+               :access-control-allow-headers ["Origin" "X-Requested-With"
+                                              "Content-Type" "Accept"
+                                              "Cache-Control" "Accept-Encoding"])))
 
 (defn -main
   [& [port]]
   (let [port (Integer. (or port
                            (System/getenv "PORT")
                            3000))]
+    (init!)
+    (.addShutdownHook (Runtime/getRuntime) (Thread. #(destroy!)))
     (jetty/run-jetty #'app {:port  port
                             :join? false})))
