@@ -1,4 +1,4 @@
-(defproject deathrow-server "1.0.0"
+(defproject deathrow-server "1.1.0-SNAPSHOT"
   :description "Random last statements by executed offenders"
   :url "https://github.com/anmonteiro/deathrow-server"
   :min-lein-version "2.0.0"
