@@ -1,24 +1,10 @@
 (ns deathrow-server.utils
-  (:require [compojure.route :as route]
-            [ring.util.response :refer [header response]]))
-
-(defn wrap-content-type-json
-  "Middleware that converts responses to have the
-  Content-Type: application/json; charset:utf8 header"
-  [handler]
-  (fn [request]
-    (let [response (handler request)]
-      (if (nil? (get (:headers response) "Content-Type"))
-        (-> response
-            (header "Content-Type" "application/json; charset=utf-8"))
-        response))))
-
+  (:require [compojure.route :as route]))
 
 (defn get-random-int
   ([max] (get-random-int 1 max))
   ([min max]
    (+ (rand-int (- (inc max) min)) min)))
-
 
 (defn return-404
   ([]

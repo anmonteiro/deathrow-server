@@ -2,13 +2,13 @@
   :description "Random last statements by executed offenders"
   :url "https://github.com/anmonteiro/deathrow-server"
   :min-lein-version "2.0.0"
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0-RC2"]
                  [compojure "1.4.0"]
+                 [com.cognitect/transit-clj "0.8.285"]
                  [congomongo "0.4.6"]
-                 [org.clojure/data.json "0.2.6"]
-                 [ring/ring-json "0.4.0"]
                  [ring "1.4.0"]
-                 [ring-cors "0.1.7"]]
+                 [ring-cors "0.1.7"]
+                 [ring-transit "0.1.4"]]
   :main deathrow-server.handler
   :plugins [[lein-ring "0.9.7"]]
   :ring {:handler deathrow-server.handler/app

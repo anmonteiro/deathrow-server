@@ -1,11 +1,12 @@
 (ns deathrow-server.handler
   (:require [deathrow-server.utils :as utils]
+            [cognitect.transit :as transit]
             [compojure.core :refer [context defroutes GET]]
             [compojure.handler :as handler]
             [compojure.route :as route]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.cors :refer [wrap-cors]]
-            [ring.middleware.json :as middleware]
+            [ring.middleware.transit :as middleware]
             [ring.util.response :refer [redirect response]]
             [somnium.congomongo :as m])
   (:gen-class))
@@ -93,8 +94,8 @@
 (def app
   (->
     (handler/api app-routes)
-    (middleware/wrap-json-response)
-    (utils/wrap-content-type-json)
+    ;; this should be called before any middleware that sets the content type
+    (middleware/wrap-transit-response {:encoding :json :opts {}})
     (wrap-cors :access-control-allow-origin #".*localhost.*|.*anmonteiro.com.*"
                :access-control-allow-methods [:get]
                :access-control-allow-headers ["Origin" "X-Requested-With"
