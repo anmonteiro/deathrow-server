@@ -1,5 +1,6 @@
 (ns deathrow-server.handler
-  (:require [deathrow-server.utils :as utils]
+  (:require [deathrow-server.parser :as parser]
+            [deathrow-server.utils :as utils]
             [cognitect.transit :as transit]
             [compojure.core :refer [context defroutes GET]]
             [compojure.handler :as handler]
