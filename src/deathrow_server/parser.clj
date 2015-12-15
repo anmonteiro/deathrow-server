@@ -4,12 +4,7 @@
 ;; =============================================================================
 ;; Reads
 
-(defn dispatch
-  "Helper function for implementing :read and :mutate as multimethods. Use this
-   as the dispatch-fn."
-  [_ key _] key)
-
-(defmulti readf dispatch)
+(defmulti readf om/dispatch)
 
 (defmethod readf :default
   [_ k _]

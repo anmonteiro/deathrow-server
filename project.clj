@@ -6,7 +6,7 @@
                  [compojure "1.4.0"]
                  [com.cognitect/transit-clj "0.8.285"]
                  [congomongo "0.4.6"]
-                 [org.omcljs/om "1.0.0-alpha28"]
+                 [org.omcljs/om "1.0.0-alpha29-SNAPSHOT"]
                  [ring "1.4.0"]
                  [ring-cors "0.1.7"]
                  [ring-transit "0.1.4"]]
