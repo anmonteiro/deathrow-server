@@ -2,7 +2,7 @@
   :description "Random last statements by executed offenders"
   :url "https://github.com/anmonteiro/deathrow-server"
   :min-lein-version "2.0.0"
-  :dependencies [[org.clojure/clojure "1.8.0-RC3"]
+  :dependencies [[org.clojure/clojure "1.8.0-RC4"]
                  [compojure "1.4.0"]
                  [com.cognitect/transit-clj "0.8.285"]
                  [congomongo "0.4.6"]
