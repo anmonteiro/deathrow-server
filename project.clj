@@ -3,9 +3,9 @@
   :url "https://github.com/anmonteiro/deathrow-server"
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [compojure "1.4.0"]
+                 [compojure "1.5.0"]
                  [com.cognitect/transit-clj "0.8.285"]
-                 [congomongo "0.4.7"]
+                 [congomongo "0.4.8"]
                  [org.omcljs/om "1.0.0-alpha30"]
                  [ring "1.4.0"]
                  [ring-cors "0.1.7"]
